@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="apikeys.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("<script>").attr("src", "https://maps.googleapis.com/maps/api/js?key=" + gmapapikey
+                + "&callback=initMap").appendTo("#gmaplib");
+        });
+
+    </script>
+</head>
+<body>
+<div>
+    <button onclick="getGeoJson('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')">Load All
+        Earthquakes Past Hour
+    </button>
+    <button onclick="getGeoJson('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson')">Load All
+        Earthquakes Past Day
+    </button>
+    <button onclick="deleteMarkers()">Delete All Maker</button>
+</div>
+<div id="map"></div>
+<script>
+    var map;
+    var geoData;
+    var markers = [];
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 2,
+            center: new google.maps.LatLng(2.8, -187.3),
+            mapTypeId: 'terrain'
+        });
+    }
+    function getGeoJson(url) {
+        $(document).ready(function () {
+            $.getJSON(
+                url,
+                function (data) {
+                    $.each(data.features, function (key, val) {
+                        var coords = val.geometry.coordinates;
+                        addMarker({lat: coords[1], lng: coords[0]});
+                    });
+                }
+            );
+        });
+    }
+
+    // Adds a marker to the map and push to the array.
+    function addMarker(location) {
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+        markers.push(marker);
+    }
+
+    // Sets the map on all markers in the array.
+    function setMapOnAll(map) {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(map);
+        }
+    }
+
+    // Removes the markers from the map, but keeps them in the array.
+    function clearMarkers() {
+        setMapOnAll(null);
+    }
+
+    // Shows any markers currently in the array.
+    function showMarkers() {
+        setMapOnAll(map);
+    }
+
+    // Deletes all markers in the array by removing references to them.
+    function deleteMarkers() {
+        clearMarkers();
+        markers = [];
+    }
+
+
+</script>
+<script id="gmaplib" async defer
+        src="">
+</script>
+
+</body>
+</html>
